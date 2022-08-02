@@ -50,9 +50,10 @@ if __name__ == "__main__":
 
         avg_score = np.mean(scores[-100:])
         if np.mean(scores[-100:]) >= np.mean(scores[-101:-1]):
-            best_score = score
             if not load_checkpoint:
                 agent.save_models()
+        if score > best_score:
+            best_score = score
         
 
         sys.stdout.write(f"Game: {i}/{n_games} | Score: {score:.2f} | Average Score: {avg_score:.2f} | Best Score: {best_score} | Epsilon: {agent.epsilon:.2f} | steps: {n_steps}\n")
