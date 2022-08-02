@@ -24,7 +24,7 @@ class Agent:
         self.action_space = list(range(self.n_actions))
         self.learn_step_counter = 0 # C steps
 
-        self.memory = ReplayBuffer(self.memory_size, self.input_dims, self.n_actions)
+        self.memory = ReplayBuffer(self.memory_size, self.input_dims)
         
         self.Q_eval = DQN(self.lr, self.n_actions, name=f"{self.env_name}_{self.algo}_q_eval",
                         input_dims=self.input_dims, checkpoint_dir=self.checkpoint_dir)
@@ -51,16 +51,16 @@ class Agent:
     def sample_memory(self):
         state, action, reward, done, next_state = self.memory.sample_buffer(self.batch_size)
     
-        states = T.tensor(state, dtype=T.float).to(self.Q_eval.device)
-        actions = T.tensor(action, dtype=T.long).to(self.Q_eval.device)
-        rewards = T.tensor(reward, dtype=T.float).to(self.Q_eval.device)
-        dones = T.tensor(done, dtype=T.bool).to(self.Q_eval.device)
-        next_states = T.tensor(next_state, dtype=T.float).to(self.Q_eval.device)
+        states = T.tensor(state).to(self.Q_eval.device)
+        actions = T.tensor(action).to(self.Q_eval.device)
+        rewards = T.tensor(reward).to(self.Q_eval.device)
+        dones = T.tensor(done).to(self.Q_eval.device)
+        next_states = T.tensor(next_state).to(self.Q_eval.device)
 
         return states, actions, rewards, dones, next_states
     
     def replace_target_network(self):
-        if self.learn_step_counter == self.replace_target_count:
+        if self.learn_step_counter % self.replace_target_count == 0:
             self.Q_next.load_state_dict(self.Q_eval.state_dict())
     
     def save_models(self):
@@ -72,7 +72,7 @@ class Agent:
         self.Q_next.load_checkpoint()
     
     def learn(self):
-        if self.memory.memory_counter > self.batch_size:
+        if self.memory.memory_counter >= self.batch_size:
             self.Q_eval.optimizer.zero_grad()
             self.replace_target_network()
             states, actions, rewards, dones, next_states = self.sample_memory()
@@ -83,6 +83,7 @@ class Agent:
 
             q_next[dones] = 0.0
             q_target = rewards + self.gamma * q_next
+            
             loss = self.Q_eval.criterion(q_target, q_pred).to(self.Q_eval.device)
             loss.backward()
             self.Q_eval.optimizer.step()

@@ -2,8 +2,7 @@ import numpy as np
 from typing import Tuple, Optional, Union
 
 class ReplayBuffer:
-    def __init__(self, max_size: int, input_shape: Union[int, Tuple[int]],
-                n_actions: Optional[int]=None) -> None:
+    def __init__(self, max_size: int, input_shape: Union[int, Tuple[int]]) -> None:
         """Initialize Replay Buffer
 
         Args:
@@ -15,8 +14,8 @@ class ReplayBuffer:
         self.memory_counter = 0
 
         self.state_memory = np.zeros((self.memory_size, *input_shape), dtype=np.float32)
-        self.new_state_memory = np.zeros_like(self.state_memory)
-        self.action_memory = np.zeros(self.memory_size, dtype=np.int32) #change to 64 bit if it doesnt work
+        self.new_state_memory = np.zeros((self.memory_size, *input_shape), dtype=np.float32)
+        self.action_memory = np.zeros(self.memory_size, dtype=np.int64) #change to 64 bit if it doesnt work
         self.reward_memory = np.zeros(self.memory_size, dtype=np.float32)
         self.terminal_memory = np.zeros(self.memory_size, dtype=np.uint8)
 

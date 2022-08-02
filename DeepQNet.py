@@ -9,7 +9,8 @@ import numpy as np
 
 
 class DQN(nn.Module):
-    def __init__(self, lr: float, n_actions: int, name: str, input_dims: Iterable[int], checkpoint_dir: str) -> None:
+    def __init__(self, lr: float, n_actions: int, name: str,
+                input_dims: Iterable[int], checkpoint_dir: str) -> None:
         super().__init__()
         self.checkpoint_dir = checkpoint_dir
         self.checkpoint_file = os.path.join(self.checkpoint_dir, name)
@@ -47,15 +48,14 @@ class DQN(nn.Module):
 
         state = F.relu(self.fc1(state))
         state = self.fc2(state)
-
+        
         return state
     
     def save_checkpoint(self):
-        sys.stdout.write("... Saving Checkpoint ...\n")
-        T.save(self.state_dict, self.checkpoint_file)
+        # sys.stdout.write("... Saving Checkpoint ...\n")
+        T.save(self.state_dict(), self.checkpoint_file)
     
     def load_checkpoint(self):
-        sys.stdout.write("\r... Loading Checkpoint ...")
-        sys.stdout.flush()
+        print("... Loading Checkpoint ...")
         self.load_state_dict(T.load(self.checkpoint_file))
         

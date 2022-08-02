@@ -1,4 +1,4 @@
-
+import cv2
 import collections
 from typing import Iterable, Optional
 import gym
@@ -24,7 +24,7 @@ class RepeatActionAndMaxFrame(gym.Wrapper):
         for i in range(self.repeat):
             obs, reward, done, info = self.env.step(action)
             if self.clip_reward:
-                reward = np.clip(np.array(reward), -1, 1)[0]
+                reward = np.clip(np.array([reward]), -1, 1)[0]
             t_reward += reward
             idx = i % 2
             self.frame_buffer[idx] = obs
@@ -59,13 +59,16 @@ class PreprocessFrame(gym.ObservationWrapper):
         self.observation_space = gym.spaces.Box(low=0.0, high=1.0, shape=self.shape, dtype= np.float32)
 
     def observation(self, observation):
-        transform = transforms.Compose([
-            transforms.ToTensor(),
-            transforms.Grayscale(),
-            transforms.Resize(self.shape[1:])
-        ])
-        new_observation = transform(observation).numpy() / 255.0
-
+        # transform = transforms.Compose([
+        #     transforms.ToTensor(),
+        #     transforms.Grayscale(),
+        #     transforms.Resize(self.shape[1:])
+        # ])
+        # new_observation = transform(observation).numpy()
+        # new_observation = new_observation.reshape(self.shape)
+        new_observation = cv2.cvtColor(observation, cv2.COLOR_RGB2GRAY)
+        new_observation = cv2.resize(new_observation, self.shape[1:]) 
+        new_observation = np.array(new_observation, dtype=np.uint8).reshape(self.shape) / 255.0
         return new_observation
 
 class StackFrames(gym.ObservationWrapper):
